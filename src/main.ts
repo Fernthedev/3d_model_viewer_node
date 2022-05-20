@@ -17,7 +17,7 @@ import { TransformLoc } from './math';
 export { COLLADAType as Collada } from './xmlns/www.collada.org/2005/11/COLLADASchema';
 export * from './xmlns/www.collada.org/2005/11/COLLADASchema';
 
-export async function GetGTLFModelAsync(file: string) {
+export async function GetGLTFModelAsync(file: string) {
     const buffer = await readFile(file);
     const gltf: GLTF = await load(buffer, GLTFLoader);
 
@@ -32,7 +32,7 @@ export async function GetColladaModelAsync(file: string) {
     return collada;
 }
 
-export function GetCubesGTLF(gltf: GLTF) {
+export function GetCubesGLTF(gltf: GLTF) {
     const cubes: Cube[] = []
 
     const addNodes = (node: Node) => {
@@ -231,7 +231,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
 
 // import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-// export async function GetGTLFModelAsync(file: string) {
+// export async function GetGLTFModelAsync(file: string) {
 //     const loader = new GLTFLoader();
 //     const model = await loader.loadAsync(file);
 
