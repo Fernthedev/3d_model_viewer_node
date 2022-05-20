@@ -29,6 +29,7 @@
     "@swc/core": "^1.2.186",
     "@types/xml2js": "^0.4.11",
     "cxsd": "^0.1.1",
+    "fsp-xml-parser": "^1.0.0",
     "gltf-loader-ts": "^0.3.1",
     "three": "git+https://github.com/mrdoob/three.js.git",
     "xml2js": "^0.4.23"

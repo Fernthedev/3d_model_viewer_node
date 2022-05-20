@@ -14,6 +14,7 @@ specifiers:
   '@typescript-eslint/parser': ^5.25.0
   cxsd: ^0.1.1
   eslint: ^8.15.0
+  fsp-xml-parser: ^1.0.0
   gltf-loader-ts: ^0.3.1
   three: git+https://github.com/mrdoob/three.js.git
   ts-node: ^10.7.0
@@ -28,8 +29,9 @@ dependencies:
   '@swc/core': 1.2.186
   '@types/xml2js': 0.4.11
   cxsd: 0.1.1
+  fsp-xml-parser: 1.0.0
   gltf-loader-ts: 0.3.1
-  three: github.com/mrdoob/three.js/3d1c5b8aaad7f64f81322f778a6561d04efa5b77
+  three: github.com/mrdoob/three.js/7a1f3eb4e66d16fda75dd6118e9dbb6e61e2b880
   xml2js: 0.4.23
 
 devDependencies:
@@ -1209,6 +1211,10 @@ packages:
     resolution: {integrity: sha1-FQStJSMVjKpA20onh8sBQRmU6k8=}
     dev: true
 
+  /fsp-xml-parser/1.0.0:
+    resolution: {integrity: sha512-/8AsntW1A/+N/78Ki/cYV7jaZMVir9zo7dUHjPtiia+M53PbVNzdaSyJPNKNt0sImcWM6UdrprgbjlVr8VJGTw==}
+    dev: false
+
   /functional-red-black-tree/1.0.1:
     resolution: {integrity: sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=}
     dev: true
@@ -2273,8 +2279,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  github.com/mrdoob/three.js/3d1c5b8aaad7f64f81322f778a6561d04efa5b77:
-    resolution: {tarball: https://codeload.github.com/mrdoob/three.js/tar.gz/3d1c5b8aaad7f64f81322f778a6561d04efa5b77}
+  github.com/mrdoob/three.js/7a1f3eb4e66d16fda75dd6118e9dbb6e61e2b880:
+    resolution: {tarball: https://codeload.github.com/mrdoob/three.js/tar.gz/7a1f3eb4e66d16fda75dd6118e9dbb6e61e2b880}
     name: three
     version: 0.140.0
     dev: false

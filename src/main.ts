@@ -7,11 +7,14 @@ import { load } from '@loaders.gl/core';
 import { GLTFLoader, GLTF } from '@loaders.gl/gltf';
 import { Node } from '@loaders.gl/gltf/dist/lib/types/gltf-json-schema';
 
+import { parse } from 'fsp-xml-parser'
 
-
-import { Cube } from './models';
+import { Color, Cube, Frame, TransformFromMatrix } from './models';
 import { readFile } from 'fs/promises';
-import { COLLADAType } from './xmlns/www.collada.org/2005/11/COLLADASchema';
+import { COLLADAType, Profile_COMMONType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema';
+import { Matrix4, Quaternion, Vector3 } from 'three';
+import { copy } from './utils';
+import { TransformLoc } from './math';
 
 export { COLLADAType as Collada } from './xmlns/www.collada.org/2005/11/COLLADASchema';
 export * from './xmlns/www.collada.org/2005/11/COLLADASchema';
@@ -25,8 +28,8 @@ export async function GetGTLFModelAsync(file: string) {
 
 export async function GetColladaModelAsync(file: string) {
     const str = await (await readFile(file)).toString();
-    
-    const collada: COLLADAType = await xml2js.parseStringPromise(str);
+
+    const collada: COLLADAType = (await xml2js.parseStringPromise(str)).COLLADA;
 
     return collada;
 }
@@ -36,7 +39,7 @@ export function GetCubes(gltf: GLTF) {
 
     const addNodes = (node: Node) => {
         console.log(`Node: ${node.name}`)
-        cubes.push(node)
+        // cubes.push(node)
     }
 
 
@@ -44,20 +47,182 @@ export function GetCubes(gltf: GLTF) {
     gltf.nodes?.forEach(addNodes)
 }
 
-export function GetCubesCollada(collada: COLLADAType) {
-    const cubes: Cube[] = []
+export function SetCubeOffset(cube: Cube) {
+    if (cube.frames?.every(f => f.matrix && f.transform)) {
+        cube.frames = cube.frames.map((f) => {
+            const frameTransform = TransformFromMatrix(f.matrix) //compensate pivot difference
 
-    const addNodes = (node: Node) => {
-        console.log(`Node: ${node.name}`)
-        cubes.push(node)
+            let mat = f.matrix.clone();
+            mat = TransformLoc(mat.clone(), new Vector3(0, -1, -1))
+
+            const transformedMatrix = TransformFromMatrix(mat)
+            transformedMatrix.position.add(new Vector3(frameTransform.scale.x - 2, 0 ,0))
+            mat.makeTranslation(transformedMatrix.position.x, transformedMatrix.position.y, transformedMatrix.position.z)
+
+            f.offsetMatrix = mat
+
+            return f
+        })
     }
 
-    const scenes = collada.library_visual_scenes?.map((scene) => scene.visual_scene).forEach(e => e.forEach(s => s.node.forEach((node) => {
-        if (!node.instance_geometry || !node.instance_camera) return;
+    const trans = TransformFromMatrix(cube.matrix)
+    let mat = cube.matrix.clone();
+    mat = TransformLoc(mat, new Vector3(0, -1, -1))
 
+    const transformedMatrix = TransformFromMatrix(mat)
+    transformedMatrix.position.add(new Vector3(trans.scale.x - 2, 0, 0))
+    mat.makeTranslation(transformedMatrix.position.x, transformedMatrix.position.y, transformedMatrix.position.z)
+
+    cube.offsetMatrix = mat
+}
+
+export function PostProcessCube(cube: Cube): Cube[] | undefined {
+    if (!cube.frames || cube.frames?.every(f => f.active == cube.frames![0].active)) {
+        return undefined;
+    }
+
+    const frameSpan: [number, number][] = []
+
+    let currentFrameSpan: [boolean, number, number] = [false, 0, 0]
+    let lastActive: boolean | undefined = false;
+
+    cube.frames.forEach((f, i) => {
+        if (lastActive === undefined || lastActive !== f.active) {
+            frameSpan.push([currentFrameSpan[1], currentFrameSpan[2]])
+
+            currentFrameSpan = [f.active!, i, i + 1]
+        } else {
+            currentFrameSpan[2]++
+        }
+
+        lastActive = f.active 
+    })
+
+    if (currentFrameSpan[0]) {
+        frameSpan.push([currentFrameSpan[1], currentFrameSpan[2]])
+    }
+    SetCubeOffset(cube)
+
+    return frameSpan.map((f) => {
+        const clone = copy(cube)
+        clone.frameSpan = f
+        clone.frames = cube.frames?.slice(f[0], f[1])
         
+        return clone
+    })
+}
+
+export function GetCubesCollada(collada: COLLADAType): Cube[] {
+    const cubes: Cube[] = []
+
+    const scenes = collada.library_visual_scenes?.map((scene) => scene.visual_scene).forEach(e => e.forEach(s => s.node.forEach((node) => {
+        if (!node.instance_geometry && !node.instance_camera) return;
+
+        console.log(`Node: ${(node as any).$.id}`)
+
+        const matrix: Matrix4 = new Matrix4()
+        matrix.fromArray(node.matrix!.flat())
+        const frames: Frame[] = []
+
+
+        const animationType = collada.library_animations?.find((a) => a.name === node.name);
+        if (animationType) {
+
+            const findAnimation = (pred: (str: string) => unknown) => animationType.animation.find((a) => a.id && pred(a.id))?.source.find((a) => a.id.indexOf("-output"))
+
+
+            const matrices: Matrix4[] = [];
+
+            const transformAnimation = findAnimation((id) => id.indexOf("transform"))
+            if (transformAnimation?.float_array) {
+                const transformValues = transformAnimation?.float_array;
+
+                for (let i = 0; i < transformValues.length; i += 16) {
+                    const matrix = new Matrix4()
+                    matrix.fromArray(transformValues.slice(i, i + 16))
+
+                    matrices.push(matrix)
+                }
+            }
+
+            const visibleAnimation = findAnimation((id) => id.indexOf("hide_viewport"))
+
+            const redAnimation = findAnimation((id) => id.match("_color_R$"))
+            const greenAnimation = findAnimation((id) => id.match("_color_G$"))
+            const blueAnimation = findAnimation((id) => id.match("_color_B$"))
+            const alphaAnimation = findAnimation((id) => id.match("_color$"))
+            const colors: Color[] = []
+
+            const handleColor = (s: SourceType | undefined, f: (num: number, i: number) => void) => {
+                if (s?.float_array) {
+                    Array.from(s?.float_array).forEach(f)
+                }
+            }
+
+            handleColor(redAnimation, (r, i) => colors[i].r = r)
+            handleColor(greenAnimation, (g, i) => colors[i].g = g)
+            handleColor(blueAnimation, (b, i) => colors[i].b = b)
+            handleColor(alphaAnimation, (a, i) => colors[i].a = a)
+
+            visibleAnimation?.float_array?.forEach((visible, i) => {
+                frames[i].active = visible == 0;
+            })
+
+            matrices.forEach((m, i) => {
+                const frame = frames[i];
+                frame.matrix = m;
+            })
+
+            colors.forEach((c, i) => {
+                const frame = frames[i];
+                frame.color = c;
+            })
+        }
+
+        frames.forEach((f, i) => f.frameId = i)
+
+        const cube: Cube = {
+            name: node.name,
+            matrix: matrix,
+            frames: frames,
+            material: node.instance_geometry?.map(e => e.bind_material?.technique_common?.instance_material.map(m => m.symbol.split("-material")[0])).filter(e => e) as unknown as (string[] | undefined),
+            offsetMatrix: new Matrix4,
+            camera: node.instance_camera !== undefined,
+            frameSpan: [0, frames.length],
+            color: undefined,
+            note: false,
+            bomb: node.instance_geometry?.some(e => e.url?.indexOf("sphere")) ?? false,
+            wall: false,
+        }
+
+        if (collada.library_effects && cube.material && cube.material.length > 0) {
+            const effectContainer = collada.library_effects.flatMap(e => e.effect)
+            const correctEffect = effectContainer.find(e => e.id.split("-effect")[0] == cube.material![0])
+
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const profile_common: Profile_COMMONType = (correctEffect as any).profile_COMMON
+
+            const colorArray = profile_common.technique.lambert.diffuse?.color
+            cube.color = colorArray && { r: colorArray[0], g: colorArray[1], b: colorArray[2], a: colorArray[3] }
+        }
+
+        if (cube.material) {
+            cube.note = cube.material.some(m => m.indexOf("note"))
+            cube.track = cube.material.reverse().find((e) => e.toLowerCase().startsWith("track_")) ?? cube.material[cube.material.length - 1]
+        }
+
+        cubes.push(cube)
     })))
 
+
+
+    return cubes.flatMap((c) => PostProcessCube(c) ?? c).map((c) => {
+        c.transformation = TransformFromMatrix(c.matrix)
+        c.offsetTransformation = TransformFromMatrix(c.offsetMatrix)
+
+        return c
+    })
 }
 
 // sad
