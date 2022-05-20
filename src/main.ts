@@ -7,8 +7,6 @@ import { load } from '@loaders.gl/core';
 import { GLTFLoader, GLTF } from '@loaders.gl/gltf';
 import { Node } from '@loaders.gl/gltf/dist/lib/types/gltf-json-schema';
 
-import { parse } from 'fsp-xml-parser'
-
 import { Color, Cube, Frame, TransformFromMatrix } from './models';
 import { readFile } from 'fs/promises';
 import { COLLADAType, Profile_COMMONType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema';
@@ -34,7 +32,7 @@ export async function GetColladaModelAsync(file: string) {
     return collada;
 }
 
-export function GetCubes(gltf: GLTF) {
+export function GetCubesGTLF(gltf: GLTF) {
     const cubes: Cube[] = []
 
     const addNodes = (node: Node) => {
@@ -45,6 +43,8 @@ export function GetCubes(gltf: GLTF) {
 
 
     gltf.nodes?.forEach(addNodes)
+
+    throw "Not implemented yet"
 }
 
 export function SetCubeOffset(cube: Cube) {
@@ -56,7 +56,7 @@ export function SetCubeOffset(cube: Cube) {
             mat = TransformLoc(mat.clone(), new Vector3(0, -1, -1))
 
             const transformedMatrix = TransformFromMatrix(mat)
-            transformedMatrix.position.add(new Vector3(frameTransform.scale.x - 2, 0 ,0))
+            transformedMatrix.position.add(new Vector3(frameTransform.scale.x - 2, 0, 0))
             mat.makeTranslation(transformedMatrix.position.x, transformedMatrix.position.y, transformedMatrix.position.z)
 
             f.offsetMatrix = mat
@@ -95,7 +95,7 @@ export function PostProcessCube(cube: Cube): Cube[] | undefined {
             currentFrameSpan[2]++
         }
 
-        lastActive = f.active 
+        lastActive = f.active
     })
 
     if (currentFrameSpan[0]) {
@@ -107,7 +107,7 @@ export function PostProcessCube(cube: Cube): Cube[] | undefined {
         const clone = copy(cube)
         clone.frameSpan = f
         clone.frames = cube.frames?.slice(f[0], f[1])
-        
+
         return clone
     })
 }
