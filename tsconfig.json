@@ -5,6 +5,7 @@
      ],
     "exclude": [
         "node_modules",
+        "node_modules/.pnpm",
         "**/*.spec.ts"
     ],
     "ts-node": {
@@ -22,7 +23,8 @@
         "strict": true,
         "sourceMap": true,
         "lib": [
-            "ES2021"
+            "ES2021",
+            "DOM"
         ]
     },
 }

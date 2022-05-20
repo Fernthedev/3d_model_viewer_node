@@ -6174,7 +6174,6 @@ export interface _Stencil_test_enableType_2 extends BaseType {
 }
 export interface Stencil_test_enableType_2 extends _Stencil_test_enableType_2 { constructor: { new(): Stencil_test_enableType_2 }; }
 
-export type string = string;
 type _string = Primitive._string;
 
 export interface _Tapered_capsuleType extends BaseType {

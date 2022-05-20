@@ -2,11 +2,6 @@ import * as THREE from 'three';
 
 import xml2js from "xml2js";
 
-import '@loaders.gl/polyfills';
-import { load } from '@loaders.gl/core';
-import { GLTFLoader, GLTF } from '@loaders.gl/gltf';
-import { Node } from '@loaders.gl/gltf/dist/lib/types/gltf-json-schema';
-
 import { Color, Cube, Frame, TransformFromMatrix } from './models';
 import { readFile } from 'fs/promises';
 import { COLLADAType, Profile_COMMONType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema';
@@ -14,14 +9,18 @@ import { Matrix4, Quaternion, Vector3 } from 'three';
 import { copy } from './utils';
 import { TransformLoc } from './math';
 
+import { GltfAsset } from 'gltf-loader-ts';
+import { Node } from 'gltf-loader-ts/lib/gltf';
+import { parseGLTF } from './loader';
+
 export { COLLADAType as Collada } from './xmlns/www.collada.org/2005/11/COLLADASchema';
 export * from './xmlns/www.collada.org/2005/11/COLLADASchema';
 
 export async function GetGLTFModelAsync(file: string) {
     const buffer = await readFile(file);
-    const gltf: GLTF = await load(buffer, GLTFLoader);
+    const model: GltfAsset = await parseGLTF(buffer);
 
-    return gltf;
+    return model;
 }
 
 export async function GetColladaModelAsync(file: string) {
@@ -32,7 +31,7 @@ export async function GetColladaModelAsync(file: string) {
     return collada;
 }
 
-export function GetCubesGLTF(gltf: GLTF) {
+export function GetCubesGLTF(gltf: GltfAsset) {
     const cubes: Cube[] = []
 
     const addNodes = (node: Node) => {
@@ -42,7 +41,7 @@ export function GetCubesGLTF(gltf: GLTF) {
 
 
 
-    gltf.nodes?.forEach(addNodes)
+    gltf.gltf.nodes?.forEach(addNodes)
 
     throw "Not implemented yet"
 }
