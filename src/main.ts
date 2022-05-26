@@ -20,9 +20,12 @@ export async function GetGLTFModelAsync(file: string) {
 }
 
 export async function GetColladaModelAsync(file: string) {
-    const str = (await Deno.readFile(file)).toString();
+    const str = (await Deno.readTextFile(file)).toString();
 
-    const collada: COLLADAType = xml2js(str,{}).COLLADA as COLLADAType;
+    const collada: COLLADAType = (xml2js(str, {
+        compact: true,
+        alwaysArray: true
+    }).COLLADA as any)[0] as COLLADAType;
 
     return collada;
 }
@@ -114,8 +117,6 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
     const scenes = collada.library_visual_scenes?.map((scene) => scene.visual_scene).forEach(e => e.forEach(s => s.node.forEach((node) => {
         if (!node.instance_geometry && !node.instance_camera) return;
 
-        console.log(`Node: ${(node as any).$.id}`)
-
         const matrix: Matrix4 = new Matrix4()
         matrix.fromArray(node.matrix!.flat())
         const frames: Frame[] = []
@@ -178,7 +179,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
         frames.forEach((f, i) => f.frameId = i)
 
         const cube: Cube = {
-            name: node.name,
+            name: node.name ?? (node as any)._attributes.id,
             matrix: matrix,
             frames: frames,
             material: node.instance_geometry?.map(e => e.bind_material?.technique_common?.instance_material.map(m => m.symbol.split("-material")[0])).filter(e => e) as unknown as (string[] | undefined),

@@ -6,8 +6,22 @@
     "configurations": [
         {
             "type": "node",
+            "name": "Launch Program (deno)",
             "request": "launch",
-            "name": "Launch Program",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "deno",
+            "runtimeArgs": [
+                "run",
+                "--inspect-brk",
+                "-A"
+            ],
+            "program": "${workspaceFolder}/test/heliov.ts",
+            "attachSimplePort": 9229
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program Node",
             "runtimeArgs": [
                 "-r",
                 "ts-node/register"
@@ -15,6 +29,6 @@
             "args": [
                 "${workspaceFolder}/test/test_helios.ts"
             ]
-        }
+        },
     ],
 }
