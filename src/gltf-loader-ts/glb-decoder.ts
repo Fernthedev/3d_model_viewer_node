@@ -1,15 +1,12 @@
-import { GltfAsset } from "./gltf-loader-ts/gltf-asset.ts";
-import { LoaderUtils } from "./gltf-loader-ts/loaderutils.ts";
-import { LoadingManager } from "./gltf-loader-ts/loadingmanager.ts";
+import { LoaderUtils } from './loaderutils.ts';
 
 export const BINARY_HEADER_MAGIC = 'glTF';
 const BINARY_HEADER_LENGTH = 12;
-const BINARY_CHUNK_TYPES = { JSON: 0x4e4f534a, BIN: 0x004e4942 };
+const BINARY_CHUNK_TYPES = { JSON: 0x4E4F534A, BIN: 0x004E4942 };
 
 export class GLTFBinaryData {
-    json = "";
-    binaryChunk: Uint8Array = new Uint8Array();
-    
+    json!: string;
+    binaryChunk!: Uint8Array;
     constructor(data: ArrayBuffer) {
         const headerView = new DataView(data, 0, BINARY_HEADER_LENGTH);
 
@@ -52,29 +49,4 @@ export class GLTFBinaryData {
             throw new Error('glTF-Binary: JSON content not found.');
         }
     }
-}
-
-export function parseGLTF(data: ArrayBuffer): GltfAsset {
-    let content: string;
-    // tslint:disable-next-line:no-unnecessary-initializer
-    let glbData: GLTFBinaryData | undefined = undefined;
-    if (typeof data === 'string') {
-        content = data;
-    } else {
-        const magic = LoaderUtils.decodeText(new Uint8Array(data.slice(0, 4)));
-        if (magic === BINARY_HEADER_MAGIC) {
-            glbData = new GLTFBinaryData(new Uint8Array(data).buffer);
-            content = glbData.json;
-        } else {
-            content = LoaderUtils.decodeText(new Uint8Array(data));
-        }
-    }
-
-    const json = JSON.parse(content);
-
-    if (json.asset === undefined || json.asset.version[0] < 2) {
-        throw new Error('Unsupported asset. glTF versions >=2.0 are supported.');
-    }
-
-    return new GltfAsset(json, "", glbData, new LoadingManager());
 }

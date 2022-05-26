@@ -1,4 +1,4 @@
-import * as Primitive from '../../../xml-primitives.d';
+import * as Primitive from '../../../xml-primitives.d.ts';
 
 // Source files:
 // http://www.w3.org/2001/03/xml.xsd

@@ -1,5 +1,5 @@
-import { Matrix4, Quaternion, Vector3 } from "three";
-import { TransformFromMatrix } from "./models";
+import { Matrix4, Quaternion, Vector3 } from "./deps.ts";
+import { TransformFromMatrix } from "./models.ts";
 
 export function TransformLoc(matrix: Matrix4, pivot: Vector3): Matrix4 {
     matrix = matrix.clone();

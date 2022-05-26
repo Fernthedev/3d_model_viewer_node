@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 export function copy<T>(obj: T): T {
     if (obj == null || typeof obj !== "object") { return obj; }
 

@@ -1,32 +1,28 @@
-import * as THREE from 'three';
+import { Color, Cube, Frame, TransformFromMatrix } from './models.ts';
+import { COLLADAType, Profile_COMMONType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema.ts';
+import { copy } from './utils.ts';
+import { TransformLoc } from './math.ts';
+import { parseGLTF } from './loader.ts';
+import { xml2js, Vector3, Matrix4 } from "./deps.ts";
+import { Node } from "./gltf-loader-ts/gltf.ts";
+import { GltfAsset } from "./gltf-loader-ts/gltf-asset.ts";
 
-import xml2js from "xml2js";
 
-import { Color, Cube, Frame, TransformFromMatrix } from './models';
-import { readFile } from 'fs/promises';
-import { COLLADAType, Profile_COMMONType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema';
-import { Matrix4, Quaternion, Vector3 } from 'three';
-import { copy } from './utils';
-import { TransformLoc } from './math';
 
-import { GltfAsset } from 'gltf-loader-ts';
-import { Node } from 'gltf-loader-ts/lib/gltf';
-import { parseGLTF } from './loader';
-
-export { COLLADAType as Collada } from './xmlns/www.collada.org/2005/11/COLLADASchema';
-export * from './xmlns/www.collada.org/2005/11/COLLADASchema';
+export type { COLLADAType as Collada } from './xmlns/www.collada.org/2005/11/COLLADASchema.ts';
+export * from './xmlns/www.collada.org/2005/11/COLLADASchema.ts';
 
 export async function GetGLTFModelAsync(file: string) {
-    const buffer = await readFile(file);
-    const model: GltfAsset = await parseGLTF(buffer);
+    const buffer = await Deno.readFile(file);
+    const model: GltfAsset = parseGLTF(buffer);
 
     return model;
 }
 
 export async function GetColladaModelAsync(file: string) {
-    const str = await (await readFile(file)).toString();
+    const str = (await Deno.readFile(file)).toString();
 
-    const collada: COLLADAType = (await xml2js.parseStringPromise(str)).COLLADA;
+    const collada: COLLADAType = xml2js(str,{}).COLLADA as COLLADAType;
 
     return collada;
 }
@@ -51,6 +47,7 @@ export function SetCubeOffset(cube: Cube) {
         cube.frames = cube.frames.map((f) => {
             const frameTransform = TransformFromMatrix(f.matrix) //compensate pivot difference
 
+            
             let mat = f.matrix.clone();
             mat = TransformLoc(mat.clone(), new Vector3(0, -1, -1))
 
@@ -200,6 +197,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
 
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // deno-lint-ignore no-explicit-any
             const profile_common: Profile_COMMONType = (correctEffect as any).profile_COMMON
 
             const colorArray = profile_common.technique.lambert.diffuse?.color

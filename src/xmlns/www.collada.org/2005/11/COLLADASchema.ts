@@ -1,5 +1,5 @@
-import * as Primitive from '../../../xml-primitives.d';
-import * as xml from '../../../www.w3.org/XML/1998/namespace.d';
+import * as Primitive from '../../../xml-primitives.d.ts';
+import * as xml from '../../../www.w3.org/XML/1998/namespace.d.ts';
 
 // Source files:
 // https://www.khronos.org/files/collada_schema_1_4

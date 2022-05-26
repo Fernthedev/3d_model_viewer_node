@@ -1,4 +1,4 @@
-import { Matrix4, Quaternion, Vector3 } from "three"
+import { Matrix4, Quaternion, Vector3 } from "./deps.ts"
 
 // export interface Vector3 {
 //     x: number,

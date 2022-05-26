@@ -1,6 +1,6 @@
-var cxml = require("cxml");
+import { register } from "cxml";
 
-cxml.register('xml-primitives', exports, [
+register('xml-primitives', exports, [
 ], [
 	'any',
 	'boolean',
