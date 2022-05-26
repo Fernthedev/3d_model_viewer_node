@@ -30,6 +30,17 @@ export async function GetColladaModelAsync(file: string) {
     return collada;
 }
 
+function GetColladaModelSync(file: string) {
+    const str = (Deno.readTextFileSync(file)).toString();
+
+    const collada: COLLADAType = (xml2js(str, {
+        compact: true,
+        alwaysArray: true
+    }).COLLADA as any)[0] as COLLADAType;
+
+    return collada;
+}
+
 export function GetCubesGLTF(gltf: GltfAsset) {
     const cubes: Cube[] = []
 
