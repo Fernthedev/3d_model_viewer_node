@@ -1,7 +1,7 @@
 import { Color, Cube, Frame, TransformFromMatrix } from './models.ts';
 import { COLLADAType, Profile_COMMONType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema.ts';
 import { copy } from './utils.ts';
-import { TransformLoc } from './math.ts';
+import { NumArrayFromString, TransformLoc } from './math.ts';
 import { parseGLTF } from './loader.ts';
 import { xml2js, Vector3, Matrix4 } from "./deps.ts";
 import { Node } from "./gltf-loader-ts/gltf.ts";
@@ -129,7 +129,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
         if (!node.instance_geometry && !node.instance_camera) return;
 
         const matrix: Matrix4 = new Matrix4()
-        matrix.fromArray(node.matrix!.flat())
+        matrix.fromArray(NumArrayFromString((node.matrix!.flat()[0] as any)._text[0] as string))
         const frames: Frame[] = []
 
 
@@ -194,7 +194,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
             matrix: matrix,
             frames: frames,
             material: node.instance_geometry?.map(e => e.bind_material?.technique_common?.instance_material.map(m => m.symbol.split("-material")[0])).filter(e => e) as unknown as (string[] | undefined),
-            offsetMatrix: new Matrix4,
+            offsetMatrix: new Matrix4(),
             camera: node.instance_camera !== undefined,
             frameSpan: [0, frames.length],
             color: undefined,
