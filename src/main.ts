@@ -132,28 +132,47 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
         matrix.fromArray(NumArrayFromString((node.matrix!.flat()[0] as any)._text[0] as string))
         const frames: Frame[] = []
 
+        const fixFrames = () => {
+            frames.forEach((_, i) => {
+                frames[i] ??= {
+                    frameId: i,
+                    matrix: new Matrix4()
+                }
+
+                frames[i].frameId = i;
+            })
+        }
+
+        const getFrame = (i: number) => {
+            return frames[i] ??= {
+                frameId: i,
+                matrix: new Matrix4().identity()
+            }
+        }
+
+
 
         const animationType = collada.library_animations?.find((a) => a.name === node.name);
         if (animationType) {
 
-            const findAnimation = (pred: (str: string) => unknown) => animationType.animation.find((a) => a.id && pred(a.id))?.source.find((a) => a.id.indexOf("-output"))
+            const findAnimation = (pred: (str: string) => unknown) => animationType.animation.flatMap(a => a.animation).find((a) => (a as any)._attributes.id && pred((a as any)._attributes.id))?.source.find((a) => (a as any)._attributes.id?.indexOf("-output") !== -1)
 
 
             const matrices: Matrix4[] = [];
 
-            const transformAnimation = findAnimation((id) => id.indexOf("transform"))
+            const transformAnimation = findAnimation((id) => id.indexOf("transform") !== -1)
             if (transformAnimation?.float_array) {
                 const transformValues = transformAnimation?.float_array;
 
                 for (let i = 0; i < transformValues.length; i += 16) {
-                    const matrix = new Matrix4()
+                    const matrix = new Matrix4().identity()
                     matrix.fromArray(transformValues.slice(i, i + 16))
 
                     matrices.push(matrix)
                 }
             }
 
-            const visibleAnimation = findAnimation((id) => id.indexOf("hide_viewport"))
+            const visibleAnimation = findAnimation((id) => id.indexOf("hide_viewport") !== -1)
 
             const redAnimation = findAnimation((id) => id.match("_color_R$"))
             const greenAnimation = findAnimation((id) => id.match("_color_G$"))
@@ -173,21 +192,21 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
             handleColor(alphaAnimation, (a, i) => colors[i].a = a)
 
             visibleAnimation?.float_array?.forEach((visible, i) => {
-                frames[i].active = visible == 0;
+                getFrame(i).active = visible == 0;
             })
 
             matrices.forEach((m, i) => {
-                const frame = frames[i];
+                const frame = getFrame(i);
                 frame.matrix = m;
             })
 
             colors.forEach((c, i) => {
-                const frame = frames[i];
+                const frame = getFrame(i);
                 frame.color = c;
             })
         }
 
-        frames.forEach((f, i) => f.frameId = i)
+        fixFrames()
 
         const cube: Cube = {
             name: node.name ?? (node as any)._attributes.id,
@@ -199,13 +218,13 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
             frameSpan: [0, frames.length],
             color: undefined,
             note: false,
-            bomb: node.instance_geometry?.some(e => e.url?.indexOf("sphere")) ?? false,
+            bomb: node.instance_geometry?.some(e => e.url?.indexOf("sphere") ?? -1 !== -1) ?? false,
             wall: false,
         }
 
         if (collada.library_effects && cube.material && cube.material.length > 0) {
             const effectContainer = collada.library_effects.flatMap(e => e.effect)
-            const correctEffect = effectContainer.find(e => e.id.split("-effect")[0] == cube.material![0])
+            const correctEffect = effectContainer.find(e => e.id.split("-effect")[0] === cube.material![0])
 
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -217,7 +236,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
         }
 
         if (cube.material) {
-            cube.note = cube.material.some(m => m.indexOf("note"))
+            cube.note = cube.material.some(m => m.indexOf("note") !== -1)
             cube.track = cube.material.reverse().find((e) => e.toLowerCase().startsWith("track_")) ?? cube.material[cube.material.length - 1]
         }
 
