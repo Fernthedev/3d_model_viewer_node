@@ -30,7 +30,7 @@ export async function GetColladaModelAsync(file: string) {
     return collada;
 }
 
-function GetColladaModelSync(file: string) {
+export function GetColladaModelSync(file: string) {
     const str = (Deno.readTextFileSync(file)).toString();
 
     const collada: COLLADAType = (xml2js(str, {
