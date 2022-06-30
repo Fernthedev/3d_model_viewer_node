@@ -162,7 +162,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
 
             const transformAnimation = findAnimation((id) => id.indexOf("transform") !== -1)
             if (transformAnimation?.float_array) {
-                const transformValues = transformAnimation?.float_array;
+                const transformValues = NumArrayFromString(transformAnimation?.float_array[0]._text[0]);
 
                 for (let i = 0; i < transformValues.length; i += 16) {
                     const matrix = new Matrix4().identity()
@@ -212,7 +212,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
             name: node.name ?? (node as any)._attributes.id,
             matrix: matrix,
             frames: frames,
-            material: node.instance_geometry?.map(e => e.bind_material?.technique_common?.instance_material.map(m => m.symbol.split("-material")[0])).filter(e => e) as unknown as (string[] | undefined),
+            material: node.instance_geometry?.flatMap(e => e.bind_material?.[0].technique_common?.[0].instance_material.map(m => m._attributes.symbol.split("-material")[0]) as string[]).filter(e => e),
             offsetMatrix: new Matrix4(),
             camera: node.instance_camera !== undefined,
             frameSpan: [0, frames.length],
@@ -224,18 +224,18 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
 
         if (collada.library_effects && cube.material && cube.material.length > 0) {
             const effectContainer = collada.library_effects.flatMap(e => e.effect)
-            const correctEffect = effectContainer.find(e => e.id.split("-effect")[0] === cube.material![0])
+            const correctEffect = effectContainer.find(e => e._attributes.id.split("-effect")[0] === cube.material![0])!
 
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             // deno-lint-ignore no-explicit-any
-            const profile_common: Profile_COMMONType = (correctEffect as any).profile_COMMON
+            const profile_common = correctEffect.profile_COMMON
 
-            const colorArray = profile_common.technique.lambert.diffuse?.color
+            const colorArray = NumArrayFromString(profile_common.flatMap(p => p.technique[0].lambert[0].diffuse?.[0].color)[0]!._text[0])
             cube.color = colorArray && { r: colorArray[0], g: colorArray[1], b: colorArray[2], a: colorArray[3] }
         }
 
-        if (cube.material) {
+        if (cube.material && cube.material.length > 0) {
             cube.note = cube.material.some(m => m.indexOf("note") !== -1)
             cube.track = cube.material.reverse().find((e) => e.toLowerCase().startsWith("track_")) ?? cube.material[cube.material.length - 1]
         }

@@ -204,7 +204,7 @@ export interface _Bind_materialType extends BaseType {
 	technique?: TechniqueType[];
 	/** The technique_common element specifies the bind_material information for the common
 	  * profile which all COLLADA implementations need to support. */
-	technique_common: Bind_materialTypeTechnique_commonType;
+	technique_common: Bind_materialTypeTechnique_commonType[];
 }
 export interface Bind_materialType extends _Bind_materialType { constructor: { new(): Bind_materialType }; }
 
@@ -1685,14 +1685,16 @@ export interface _Color_materialTypeModeType extends BaseType {
 export interface Color_materialTypeModeType extends _Color_materialTypeModeType { constructor: { new(): Color_materialTypeModeType }; }
 
 export interface _common_color_or_texture_type extends BaseType {
-	color: common_color_or_texture_typeColorType;
+	color: {
+	_text:	common_color_or_texture_typeColorType;
+	}
 	param: common_color_or_texture_typeParamType;
 	texture: common_color_or_texture_typeTextureType;
 }
 export interface  common_color_or_texture_type extends _common_color_or_texture_type { constructor: { new(): common_color_or_texture_type }; }
 export var common_color_or_texture_type: { new(): common_color_or_texture_type };
 
-type common_color_or_texture_typeColorType = number[];
+type common_color_or_texture_typeColorType = string[];
 
 export interface _common_color_or_texture_typeParamType extends BaseType {
 	ref: string;
@@ -1935,9 +1937,12 @@ export interface _Dither_enableType_2 extends BaseType {
 export interface Dither_enableType_2 extends _Dither_enableType_2 { constructor: { new(): Dither_enableType_2 }; }
 
 export interface _EffectType extends BaseType {
-	/** The id attribute is a text string containing the unique identifier of this element.
-	  * This value must be unique within the instance document. Optional attribute. */
-	id: string;
+	_attributes: {
+		/** The id attribute is a text string containing the unique identifier of this element.
+		  * This value must be unique within the instance document. Optional attribute. */
+		id: string;
+	},
+	profile_COMMON: Profile_COMMONType[]
 	/** The name attribute is the text string name of this element. Optional attribute. */
 	name: string;
 	/** The annotate element allows you to specify an annotation on this effect. */
@@ -1986,7 +1991,7 @@ export interface ExtraType extends _ExtraType { constructor: { new(): ExtraType 
 export type float = number;
 type _float = Primitive._number;
 
-type Float_arrayType = number[];
+type Float_arrayType = string[];
 
 export type float2 = number[];
 
@@ -3250,7 +3255,7 @@ export interface _Instance_geometryType extends BaseType {
 	url: string;
 	/** Bind a specific material to a piece of geometry, binding varying and uniform parameters at the
 	  * same time. */
-	bind_material?: Bind_materialType;
+	bind_material?: Bind_materialType[];
 	/** The extra element declares additional information regarding its parent element. */
 	extra?: ExtraType[];
 }
@@ -3262,8 +3267,11 @@ export interface _Instance_materialType extends BaseType {
 	/** The sid attribute is a text string value containing the sub-identifier of this element. This
 	  * value must be unique within the scope of the parent element. Optional attribute. */
 	sid: string;
-	/** The symbol attribute specifies which symbol defined from within the geometry this material binds to. */
-	symbol: string;
+
+	_attributes: {
+		symbol: string
+	}
+
 	/** The target attribute specifies the URL of the location of the object to instantiate. */
 	target: string;
 	/** The bind element binds values to effect parameters upon instantiation. */
@@ -5026,7 +5034,7 @@ export interface _Profile_COMMONType extends BaseType {
 	image?: ImageType[];
 	newparam?: common_newparam_type[];
 	/** Holds a description of the textures, samplers, shaders, parameters, and passes necessary for rendering this effect using one method. */
-	technique: Profile_COMMONTypeTechniqueType;
+	technique: Profile_COMMONTypeTechniqueType[];
 }
 export interface Profile_COMMONType extends _Profile_COMMONType { constructor: { new(): Profile_COMMONType }; }
 
@@ -5048,7 +5056,9 @@ export interface _Profile_COMMONTypeTechniqueType extends BaseType {
 	  * forms of imagery. The image elements allows for specifying an external image file with
 	  * the init_from element or embed image data with the data element. */
 	image?: ImageType[];
-	lambert: Profile_COMMONTypeTechniqueTypeLambertType;
+
+	lambert: Profile_COMMONTypeTechniqueTypeLambertType[];
+	
 	newparam?: common_newparam_type[];
 	phong: Profile_COMMONTypeTechniqueTypePhongType;
 }
@@ -5080,7 +5090,7 @@ export interface Profile_COMMONTypeTechniqueTypeConstantType extends _Profile_CO
 
 export interface _Profile_COMMONTypeTechniqueTypeLambertType extends BaseType {
 	ambient?: common_color_or_texture_type;
-	diffuse?: common_color_or_texture_type;
+	diffuse?: common_color_or_texture_type[];
 	emission?: common_color_or_texture_type;
 	index_of_refraction?: common_float_or_param_type;
 	reflective?: common_color_or_texture_type;
@@ -5910,7 +5920,9 @@ export interface _SourceType extends BaseType {
 	/** The bool_array element declares the storage for a homogenous array of boolean values. */
 	bool_array?: Bool_arrayType;
 	/** The float_array element declares the storage for a homogenous array of floating point values. */
-	float_array?: Float_arrayType;
+	float_array?: {
+	_text:	Float_arrayType;
+	}[]
 	/** The IDREF_array element declares the storage for a homogenous array of ID reference values. */
 	IDREF_array?: IDREF_arrayType;
 	/** The int_array element declares the storage for a homogenous array of integer values. */
