@@ -1,5 +1,5 @@
 import { Color, Cube, Frame, TransformFromMatrix } from './models.ts';
-import { COLLADAType, Profile_COMMONType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema.ts';
+import { COLLADAType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema.ts';
 import { copy } from './utils.ts';
 import { NumArrayFromString, TransformLoc } from './math.ts';
 import { parseGLTF } from './loader.ts';
@@ -182,7 +182,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
 
             const handleColor = (s: SourceType | undefined, f: (num: number, i: number) => void) => {
                 if (s?.float_array) {
-                    Array.from(s?.float_array).forEach(f)
+                    NumArrayFromString(s?.float_array[0]._text[0]).forEach(f)
                 }
             }
 
@@ -191,7 +191,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
             handleColor(blueAnimation, (b, i) => colors[i].b = b)
             handleColor(alphaAnimation, (a, i) => colors[i].a = a)
 
-            visibleAnimation?.float_array?.forEach((visible, i) => {
+            NumArrayFromString(visibleAnimation?.float_array?.[0]._text[0] ?? "").forEach((visible, i) => {
                 getFrame(i).active = visible == 0;
             })
 

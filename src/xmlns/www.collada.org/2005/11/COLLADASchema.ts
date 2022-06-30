@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import * as Primitive from '../../../xml-primitives.d.ts';
 import * as xml from '../../../www.w3.org/XML/1998/namespace.d.ts';
 
