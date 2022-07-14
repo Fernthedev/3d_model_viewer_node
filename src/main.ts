@@ -57,7 +57,7 @@ export function GetCubesGLTF(gltf: GltfAsset) {
 }
 
 export function SetCubeOffset(cube: Cube) {
-    if (cube.frames?.every(f => f.matrix && f.transform)) {
+    if (cube.frames?.every(f => f.matrix && f.transform) && cube.frames.length > 0) {
         cube.frames = cube.frames.map((f) => {
             const frameTransform = TransformFromMatrix(f.matrix) //compensate pivot difference
 
@@ -97,8 +97,9 @@ export function PostProcessCube(cube: Cube): Cube[] | undefined {
     let lastActive: boolean | undefined = false;
 
     cube.frames.forEach((f, i) => {
-        if (lastActive === undefined || lastActive !== f.active) {
-            frameSpan.push([currentFrameSpan[1], currentFrameSpan[2]])
+        if (lastActive === undefined || i === 0 || lastActive !== f.active) {
+            if (currentFrameSpan[0])
+                frameSpan.push([currentFrameSpan[1], currentFrameSpan[2]])
 
             currentFrameSpan = [f.active!, i, i + 1]
         } else {
@@ -116,7 +117,7 @@ export function PostProcessCube(cube: Cube): Cube[] | undefined {
     return frameSpan.map((f) => {
         const clone = copy(cube)
         clone.frameSpan = f
-        clone.frames = cube.frames?.slice(f[0], f[1])
+        clone.frames = clone.frames?.slice(f[0], f[1])
 
         return clone
     })
