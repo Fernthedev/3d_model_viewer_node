@@ -10,6 +10,6 @@ export function copy<T>(obj: T): T {
         newObj[x] = value;
     })
 
-    Object.setPrototypeOf(newObj, (obj as any).__proto__);
+    Object.setPrototypeOf(newObj, obj as any);
     return newObj as T;
 }
