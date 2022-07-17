@@ -85,12 +85,11 @@ export function TransformFromMatrix(m: Matrix4) {
     // }
 
    const transform: Transform = {
-        position: new Vector3(0, 0, 0),
+        position: new Vector3(m.elements[3], m.elements[7], m.elements[11]),
         rotation: new Quaternion(0, 0, 0, 0),
         scale: new Vector3(0, 0, 0)
    }
     
-    transform.position.setFromMatrixPosition(m)
     transform.rotation.setFromRotationMatrix(m)
     transform.scale.setFromMatrixScale(m)
 
