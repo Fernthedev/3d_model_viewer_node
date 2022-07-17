@@ -101,7 +101,7 @@ export function PostProcessCube(cube: Cube): Cube[] | undefined {
             if (currentFrameSpan[0])
                 frameSpan.push([currentFrameSpan[1], currentFrameSpan[2]])
 
-            currentFrameSpan = [f.active!, i, i + 1]
+            currentFrameSpan = [f.active ?? false, i, i + 1]
         } else {
             currentFrameSpan[2]++
         }
@@ -109,9 +109,12 @@ export function PostProcessCube(cube: Cube): Cube[] | undefined {
         lastActive = f.active
     })
 
+
+
     if (currentFrameSpan[0]) {
         frameSpan.push([currentFrameSpan[1], currentFrameSpan[2]])
     }
+
     SetCubeOffset(cube)
 
     return frameSpan.map((f) => {
@@ -144,8 +147,9 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
             })
         }
 
-        const getFrame = (i: number) => {
-            return frames[i] ??= {
+        const getFrame = (i: number, c?: Cube) => {
+            const arr = c?.frames ?? frames
+            return arr[i] ??= {
                 frameId: i,
                 matrix: new Matrix4().identity()
             }
@@ -192,9 +196,11 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
             handleColor(blueAnimation, (b, i) => colors[i].b = b)
             handleColor(alphaAnimation, (a, i) => colors[i].a = a)
 
-            NumArrayFromString(visibleAnimation?.float_array?.[0]._text[0] ?? "").forEach((visible, i) => {
-                getFrame(i).active = visible == 0;
+            const visible = NumArrayFromString(visibleAnimation?.float_array?.[0]._text[0] ?? "")
+            cubes.forEach((_, i) => {
+                getFrame(i).active = visible[i] == 0
             })
+
 
             matrices.forEach((m, i) => {
                 const frame = getFrame(i);
