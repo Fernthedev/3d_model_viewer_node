@@ -15,6 +15,20 @@
                 "--inspect-brk",
                 "-A"
             ],
+            "program": "${workspaceFolder}/test/test1.ts",
+            "attachSimplePort": 9229
+        },
+        {
+            "type": "node",
+            "name": "Launch Program heliov (deno)",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "deno",
+            "runtimeArgs": [
+                "run",
+                "--inspect-brk",
+                "-A"
+            ],
             "program": "${workspaceFolder}/test/heliov.ts",
             "attachSimplePort": 9229
         },
