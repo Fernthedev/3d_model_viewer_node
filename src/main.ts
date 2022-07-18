@@ -1,4 +1,4 @@
-import { Color, Cube, Frame, TransformFromMatrix } from './models.ts';
+import { Color, Cube, Frame, MatrixFromArray, TransformFromMatrix } from './models.ts';
 import { COLLADAType, SourceType } from './xmlns/www.collada.org/2005/11/COLLADASchema.ts';
 import { copy } from './utils.ts';
 import { NumArrayFromString, TransformLoc } from './math.ts';
@@ -132,8 +132,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
     const scenes = collada.library_visual_scenes?.map((scene) => scene.visual_scene).forEach(e => e.forEach(s => s.node.forEach((node) => {
         if (!node.instance_geometry && !node.instance_camera) return;
 
-        const matrix: Matrix4 = new Matrix4()
-        matrix.fromArray(NumArrayFromString((node.matrix!.flat()[0] as any)._text[0] as string))
+        const matrix: Matrix4 = MatrixFromArray(NumArrayFromString((node.matrix!.flat()[0] as any)._text[0] as string))
         const frames: Frame[] = []
 
         const fixFrames = () => {
@@ -170,8 +169,7 @@ export function GetCubesCollada(collada: COLLADAType): Cube[] {
                 const transformValues = NumArrayFromString(transformAnimation?.float_array[0]._text[0]);
 
                 for (let i = 0; i < transformValues.length; i += 16) {
-                    const matrix = new Matrix4().identity()
-                    matrix.fromArray(transformValues.slice(i, i + 16))
+                    const matrix = MatrixFromArray(transformValues.slice(i, i + 16))
 
                     matrices.push(matrix)
                 }
