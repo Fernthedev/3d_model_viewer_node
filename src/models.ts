@@ -135,8 +135,7 @@ export function TransformFromMatrix(m: Matrix4) {
         rotation: quaternionFromMatrix(m),
         scale: new Vector3(m.elements[0], m.elements[5], m.elements[10])
     }
-
-    transform.rotation.setFromRotationMatrix(m)
+    
     transform.scale.setFromMatrixScale(m)
 
     return transform;
