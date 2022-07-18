@@ -135,8 +135,7 @@ export function TransformFromMatrix(m: Matrix4) {
     // rotation is broken
 
     const transform: Transform = {
-       // ?
-        position: new Vector3(m.elements[3] * -1, m.elements[7], m.elements[11]),
+        position: new Vector3(m.elements[3], m.elements[7], m.elements[11]),
         rotation: quaternionFromMatrix(m),
         scale: new Vector3(m.elements[0], m.elements[5], m.elements[10])
     }
